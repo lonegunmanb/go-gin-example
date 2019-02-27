@@ -1,0 +1,12 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7.25
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootroot
+  redis:
+    image: redis:5.0.3-alpine
+    ports:
+      - "6379:6379"
