@@ -15,7 +15,7 @@ type Tag struct {
 
 func ExistTagByName(name string) (bool, error) {
 	var tag Tag
-	err := db.Select("id").Where("name = ? AND deleted_on = ? ", name, 0).First(&tag).Error
+	err := db.Select("id").Where("name = ? AND deleted_on = ? ", name, 0).First(&tag).Error()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
@@ -33,7 +33,7 @@ func AddTag(name string, state int, createdBy string) error {
 		State:     state,
 		CreatedBy: createdBy,
 	}
-	if err := db.Create(&tag).Error; err != nil {
+	if err := db.Create(&tag).Error(); err != nil {
 		return err
 	}
 
@@ -43,13 +43,13 @@ func AddTag(name string, state int, createdBy string) error {
 func GetTags(pageNum int, pageSize int, maps interface{}) ([]Tag, error) {
 	var (
 		tags []Tag
-	 	err error
+		err  error
 	)
 
 	if pageSize > 0 && pageNum > 0 {
-		err = db.Where(maps).Find(&tags).Offset(pageNum).Limit(pageSize).Error
+		err = db.Where(maps).Find(&tags).Offset(pageNum).Limit(pageSize).Error()
 	} else {
-		err = db.Where(maps).Find(&tags).Error
+		err = db.Where(maps).Find(&tags).Error()
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -61,7 +61,7 @@ func GetTags(pageNum int, pageSize int, maps interface{}) ([]Tag, error) {
 
 func GetTagTotal(maps interface{}) (int, error) {
 	var count int
-	if err := db.Model(&Tag{}).Where(maps).Count(&count).Error; err != nil {
+	if err := db.Model(&Tag{}).Where(maps).Count(&count).Error(); err != nil {
 		return 0, err
 	}
 
@@ -70,7 +70,7 @@ func GetTagTotal(maps interface{}) (int, error) {
 
 func ExistTagByID(id int) (bool, error) {
 	var tag Tag
-	err := db.Select("id").Where("id = ? AND deleted_on = ? ", id, 0).First(&tag).Error
+	err := db.Select("id").Where("id = ? AND deleted_on = ? ", id, 0).First(&tag).Error()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
@@ -82,7 +82,7 @@ func ExistTagByID(id int) (bool, error) {
 }
 
 func DeleteTag(id int) error {
-	if err := db.Where("id = ?", id).Delete(&Tag{}).Error; err != nil {
+	if err := db.Where("id = ?", id).Delete(&Tag{}).Error(); err != nil {
 		return err
 	}
 
@@ -90,7 +90,7 @@ func DeleteTag(id int) error {
 }
 
 func EditTag(id int, data interface{}) error {
-	if err := db.Model(&Tag{}).Where("id = ? AND deleted_on = ? ", id, 0).Updates(data).Error; err != nil {
+	if err := db.Model(&Tag{}).Where("id = ? AND deleted_on = ? ", id, 0).Updates(data).Error(); err != nil {
 		return err
 	}
 
@@ -98,7 +98,7 @@ func EditTag(id int, data interface{}) error {
 }
 
 func CleanAllTag() (bool, error) {
-	if err := db.Unscoped().Where("deleted_on != ? ", 0).Delete(&Tag{}).Error; err != nil {
+	if err := db.Unscoped().Where("deleted_on != ? ", 0).Delete(&Tag{}).Error(); err != nil {
 		return false, err
 	}
 
