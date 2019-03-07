@@ -9,7 +9,11 @@ import (
 	"time"
 )
 
-var db IDB
+var Db IDB
+
+func init() {
+	Db = Open()
+}
 
 type IDB interface {
 	SingularTable(enable bool)
@@ -28,6 +32,7 @@ type IDB interface {
 	Updates(values interface{}, ignoreProtectedAttrs ...bool) IDB
 	Create(value interface{}) IDB
 	Delete(value interface{}, where ...interface{}) IDB
+	Connected() bool
 	Unscoped() IDB
 	Close() error
 	Error() error
@@ -45,6 +50,10 @@ func newDbWrap(gorm *gorm.DB) *dbWrap {
 
 func (w *dbWrap) exec(action func(db *gorm.DB) *gorm.DB) *dbWrap {
 	return newDbWrap(action(w.db))
+}
+
+func (w *dbWrap) Connected() bool {
+	return w.db.DB().Stats().OpenConnections > 0
 }
 
 func (w *dbWrap) Close() error {
@@ -139,7 +148,7 @@ func (w *dbWrap) DB() *sql.DB {
 	return w.db.DB()
 }
 
-func Setup() {
+func Open() IDB {
 	gormDb, err := gorm.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		setting.DatabaseSetting.User,
 		setting.DatabaseSetting.Password,
@@ -147,14 +156,14 @@ func Setup() {
 		setting.DatabaseSetting.Name))
 
 	if err != nil {
-		log.Fatalf("models.Setup err: %v", err)
+		log.Fatalf("models.Open err: %v", err)
 	}
 
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
 		return setting.DatabaseSetting.TablePrefix + defaultTableName
 	}
 
-	db = newDbWrap(gormDb)
+	db := newDbWrap(gormDb)
 
 	db.SingularTable(true)
 	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
@@ -162,10 +171,7 @@ func Setup() {
 	db.Callback().Delete().Replace("gorm:delete", deleteCallback)
 	db.DB().SetMaxIdleConns(10)
 	db.DB().SetMaxOpenConns(100)
-}
-
-func CloseDB() {
-	defer db.Close()
+	return db
 }
 
 // updateTimeStampForCreateCallback will set `CreatedOn`, `ModifiedOn` when creating

@@ -62,6 +62,10 @@ var RedisSetting = &Redis{}
 
 var cfg *ini.File
 
+func init() {
+	Setup()
+}
+
 func Setup() {
 	var err error
 	cfg, err = ini.Load("conf/app.ini")

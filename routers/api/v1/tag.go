@@ -24,7 +24,7 @@ import (
 // @Failure 500 {object} app.Response
 // @Router /api/v1/tags [get]
 func GetTags(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	name := c.Query("name")
 	state := -1
 	if arg := c.Query("state"); arg != "" {
@@ -71,7 +71,7 @@ type AddTagForm struct {
 // @Router /api/v1/tags [post]
 func AddTag(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
+		appG = app.NewGin(c)
 		form AddTagForm
 	)
 
@@ -123,7 +123,7 @@ type EditTagForm struct {
 // @Router /api/v1/tags/{id} [put]
 func EditTag(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
+		appG = app.NewGin(c)
 		form = EditTagForm{ID: com.StrTo(c.Param("id")).MustInt()}
 	)
 
@@ -167,7 +167,7 @@ func EditTag(c *gin.Context) {
 // @Failure 500 {object} app.Response
 // @Router /api/v1/tags/{id} [delete]
 func DeleteTag(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
 	valid.Min(id, 1, "id").Message("ID必须大于0")
@@ -205,7 +205,7 @@ func DeleteTag(c *gin.Context) {
 // @Failure 500 {object} app.Response
 // @Router /api/v1/tags/export [post]
 func ExportTag(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	name := c.PostForm("name")
 	state := -1
 	if arg := c.PostForm("state"); arg != "" {
@@ -236,7 +236,7 @@ func ExportTag(c *gin.Context) {
 // @Failure 500 {object} app.Response
 // @Router /api/v1/tags/import [post]
 func ImportTag(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {

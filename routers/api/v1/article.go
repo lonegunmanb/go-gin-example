@@ -24,7 +24,7 @@ import (
 // @Failure 500 {object} app.Response
 // @Router /api/v1/articles/{id} [get]
 func GetArticle(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	id := com.StrTo(c.Param("id")).MustInt()
 	valid := validation.Validation{}
 	valid.Min(id, 1, "id")
@@ -64,7 +64,7 @@ func GetArticle(c *gin.Context) {
 // @Failure 500 {object} app.Response
 // @Router /api/v1/articles [get]
 func GetArticles(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	valid := validation.Validation{}
 
 	state := -1
@@ -134,7 +134,7 @@ type AddArticleForm struct {
 // @Router /api/v1/articles [post]
 func AddArticle(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
+		appG = app.NewGin(c)
 		form AddArticleForm
 	)
 
@@ -197,7 +197,7 @@ type EditArticleForm struct {
 // @Router /api/v1/articles/{id} [put]
 func EditArticle(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
+		appG = app.NewGin(c)
 		form = EditArticleForm{ID: com.StrTo(c.Param("id")).MustInt()}
 	)
 
@@ -255,7 +255,7 @@ func EditArticle(c *gin.Context) {
 // @Failure 500 {object} app.Response
 // @Router /api/v1/articles/{id} [delete]
 func DeleteArticle(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
 	valid.Min(id, 1, "id").Message("ID必须大于0")
@@ -291,7 +291,7 @@ const (
 )
 
 func GenerateArticlePoster(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	article := &article_service.Article{}
 	qr := qrcode.NewQrCode(QRCODE_URL, 300, 300, qr.M, qr.Auto)
 	posterName := article_service.GetPosterFlag() + "-" + qrcode.GetQrCodeFileName(qr.URL) + qr.GetQrCodeExt()

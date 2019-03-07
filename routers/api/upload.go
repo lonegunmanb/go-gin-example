@@ -18,7 +18,7 @@ import (
 // @Failure 500 {object} app.Response
 // @Router /api/v1/tags/import [post]
 func UploadImage(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
 		logging.Warn(err)

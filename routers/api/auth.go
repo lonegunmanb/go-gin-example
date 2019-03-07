@@ -18,7 +18,7 @@ type auth struct {
 }
 
 func GetAuth(c *gin.Context) {
-	appG := app.Gin{C: c}
+	appG := app.NewGin(c)
 	valid := validation.Validation{}
 
 	username := c.Query("username")

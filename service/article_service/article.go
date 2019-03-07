@@ -24,102 +24,132 @@ type Article struct {
 	PageSize int
 }
 
+var returnError = func(action func(article *models.Article) error) error {
+	model := models.NewArticle(models.Open())
+	defer model.Dispose()
+	return action(model)
+}
+
+var returnValue = func(action func(article *models.Article) (interface{}, error)) (interface{}, error) {
+	model := models.NewArticle(models.Open())
+	defer model.Dispose()
+	return action(model)
+}
+
 func (a *Article) Add() error {
-	article := map[string]interface{}{
-		"tag_id":          a.TagID,
-		"title":           a.Title,
-		"desc":            a.Desc,
-		"content":         a.Content,
-		"created_by":      a.CreatedBy,
-		"cover_image_url": a.CoverImageUrl,
-		"state":           a.State,
-	}
+	return returnError(func(model *models.Article) error {
+		article := map[string]interface{}{
+			"tag_id":          a.TagID,
+			"title":           a.Title,
+			"desc":            a.Desc,
+			"content":         a.Content,
+			"created_by":      a.CreatedBy,
+			"cover_image_url": a.CoverImageUrl,
+			"state":           a.State,
+		}
+		if err := model.AddArticle(article); err != nil {
+			return err
+		}
 
-	if err := models.AddArticle(article); err != nil {
-		return err
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func (a *Article) Edit() error {
-	return models.EditArticle(a.ID, map[string]interface{}{
-		"tag_id":          a.TagID,
-		"title":           a.Title,
-		"desc":            a.Desc,
-		"content":         a.Content,
-		"cover_image_url": a.CoverImageUrl,
-		"state":		   a.State,
-		"modified_by":     a.ModifiedBy,
+	return returnError(func(model *models.Article) error {
+		return model.EditArticle(a.ID, map[string]interface{}{
+			"tag_id":          a.TagID,
+			"title":           a.Title,
+			"desc":            a.Desc,
+			"content":         a.Content,
+			"cover_image_url": a.CoverImageUrl,
+			"state":           a.State,
+			"modified_by":     a.ModifiedBy,
+		})
 	})
 }
 
 func (a *Article) Get() (*models.Article, error) {
-	var cacheArticle *models.Article
+	value, e := returnValue(func(model *models.Article) (i interface{}, e error) {
+		var cacheArticle *models.Article
 
-	cache := cache_service.Article{ID: a.ID}
-	key := cache.GetArticleKey()
-	if gredis.Exists(key) {
-		data, err := gredis.Get(key)
-		if err != nil {
-			logging.Info(err)
-		} else {
-			json.Unmarshal(data, &cacheArticle)
-			return cacheArticle, nil
+		cache := cache_service.Article{ID: a.ID}
+		key := cache.GetArticleKey()
+		if gredis.Exists(key) {
+			data, err := gredis.Get(key)
+			if err != nil {
+				logging.Info(err)
+			} else {
+				json.Unmarshal(data, &cacheArticle)
+				return cacheArticle, nil
+			}
 		}
-	}
 
-	article, err := models.GetArticle(a.ID)
-	if err != nil {
-		return nil, err
-	}
+		article, err := model.GetArticle(a.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	gredis.Set(key, article, 3600)
-	return article, nil
+		gredis.Set(key, article, 3600)
+		return article, nil
+	})
+	return value.(*models.Article), e
 }
 
 func (a *Article) GetAll() ([]*models.Article, error) {
-	var (
-		articles, cacheArticles []*models.Article
-	)
+	value, e := returnValue(func(model *models.Article) (i interface{}, e error) {
 
-	cache := cache_service.Article{
-		TagID: a.TagID,
-		State: a.State,
+		var (
+			articles, cacheArticles []*models.Article
+		)
 
-		PageNum:  a.PageNum,
-		PageSize: a.PageSize,
-	}
-	key := cache.GetArticlesKey()
-	if gredis.Exists(key) {
-		data, err := gredis.Get(key)
-		if err != nil {
-			logging.Info(err)
-		} else {
-			json.Unmarshal(data, &cacheArticles)
-			return cacheArticles, nil
+		cache := cache_service.Article{
+			TagID: a.TagID,
+			State: a.State,
+
+			PageNum:  a.PageNum,
+			PageSize: a.PageSize,
 		}
-	}
+		key := cache.GetArticlesKey()
+		if gredis.Exists(key) {
+			data, err := gredis.Get(key)
+			if err != nil {
+				logging.Info(err)
+			} else {
+				json.Unmarshal(data, &cacheArticles)
+				return cacheArticles, nil
+			}
+		}
 
-	articles, err := models.GetArticles(a.PageNum, a.PageSize, a.getMaps())
-	if err != nil {
-		return nil, err
-	}
+		articles, err := model.GetArticles(a.PageNum, a.PageSize, a.getMaps())
+		if err != nil {
+			return nil, err
+		}
 
-	gredis.Set(key, articles, 3600)
-	return articles, nil
+		gredis.Set(key, articles, 3600)
+		return articles, nil
+	})
+	return value.([]*models.Article), e
 }
 
 func (a *Article) Delete() error {
-	return models.DeleteArticle(a.ID)
+	return returnError(func(model *models.Article) error {
+		return model.DeleteArticle(a.ID)
+	})
 }
 
 func (a *Article) ExistByID() (bool, error) {
-	return models.ExistArticleByID(a.ID)
+	value, e := returnValue(func(model *models.Article) (i interface{}, e error) {
+		return model.ExistArticleByID(a.ID)
+	})
+	return value.(bool), e
 }
 
 func (a *Article) Count() (int, error) {
-	return models.GetArticleTotal(a.getMaps())
+	value, e := returnValue(func(model *models.Article) (i interface{}, e error) {
+		return model.GetArticleTotal(a.getMaps())
+	})
+	return value.(int), e
 }
 
 func (a *Article) getMaps() map[string]interface{} {
