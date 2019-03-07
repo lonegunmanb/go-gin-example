@@ -9,7 +9,9 @@ import (
 	"time"
 )
 
+//how to stub these without modify code in this file?
 var Db IDB
+var Db2 = Open()
 
 func init() {
 	Db = Open()
