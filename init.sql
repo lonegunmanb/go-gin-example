@@ -62,3 +62,13 @@ CREATE TABLE `blog_tag` (
   `state` tinyint(3) unsigned DEFAULT '1' COMMENT '状态 0为禁用、1为启用',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文章标签管理';
+
+DROP TABLE IF EXISTS `blog_article_log`;
+CREATE TABLE `blog_article_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `operation` varchar(10) NOT NULL comment '操作类型',
+  `article_title` varchar(100) NOT NULL comment '关联文章title',
+  `created_on` int(10) unsigned not null comment '创建时间',
+  `created_by` varchar(100) default '' comment '创建人',
+  primary key (`id`)
+) engine=InnoDB default charset=utf8 comment='文章操作日志'

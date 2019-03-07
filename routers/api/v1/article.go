@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/EDDYCJY/go-gin-example/models"
 	"net/http"
 
 	"github.com/Unknwon/com"
@@ -169,6 +170,13 @@ func AddArticle(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		models.AddArticleLog(models.ArticleLog{
+			Operation:    models.OperationAdd,
+			ArticleTitle: articleService.Title,
+		})
+	}()
+
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
@@ -244,6 +252,12 @@ func EditArticle(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_EDIT_ARTICLE_FAIL, nil)
 		return
 	}
+	go func() {
+		models.AddArticleLog(models.ArticleLog{
+			Operation:    models.OperationEdit,
+			ArticleTitle: articleService.Title,
+		})
+	}()
 
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
@@ -282,6 +296,12 @@ func DeleteArticle(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_ARTICLE_FAIL, nil)
 		return
 	}
+	go func() {
+		models.AddArticleLog(models.ArticleLog{
+			Operation:    models.OperationDelete,
+			ArticleTitle: articleService.Title,
+		})
+	}()
 
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
