@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/EDDYCJY/go-gin-example/models"
 	"net/http"
+	"time"
 
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
@@ -171,6 +172,7 @@ func AddArticle(c *gin.Context) {
 	}
 
 	go func() {
+		time.Sleep(50 * time.Millisecond)
 		models.AddArticleLog(models.ArticleLog{
 			Operation:    models.OperationAdd,
 			ArticleTitle: articleService.Title,
@@ -253,6 +255,7 @@ func EditArticle(c *gin.Context) {
 		return
 	}
 	go func() {
+		time.Sleep(50 * time.Millisecond)
 		models.AddArticleLog(models.ArticleLog{
 			Operation:    models.OperationEdit,
 			ArticleTitle: articleService.Title,
@@ -297,6 +300,7 @@ func DeleteArticle(c *gin.Context) {
 		return
 	}
 	go func() {
+		time.Sleep(50 * time.Millisecond)
 		models.AddArticleLog(models.ArticleLog{
 			Operation:    models.OperationDelete,
 			ArticleTitle: articleService.Title,
